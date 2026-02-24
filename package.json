@@ -1,0 +1,11 @@
+{
+  "name": "merit-space",
+  "version": "1.0.0",
+  "description": "Full-stack Exam Management System",
+  "scripts": {
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "client": "cd client && npm run dev",
+    "server": "cd server && node index.js",
+    "dev": "npm run client"
+  }
+}

@@ -1,0 +1,29 @@
+# build output
+client/dist/
+server/dist/
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+server/.env
+server/.env.production
+client/vite.config.ts
+server/exam_system.sql
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/

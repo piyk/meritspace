@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id
+  email         String?   @unique
+  name          String?
+  role          String?   @default("STUDENT")
+  picture       String?
+  registered_at DateTime? @default(now())
+
+  examsCreated  Exam[]
+  submissions   Submission[]
+  examGroups    ExamGroup[]
+
+  @@map("users")
+}
+
+model Exam {
+  id                    String      @id
+  title                 String?
+  course                String?
+  term                  String?
+  duration_minutes      Int?
+  start_time            DateTime?
+  created_by            String?
+  is_public             Int?        @default(1)
+  permitted_emails      String?
+  status                String?     @default("active")
+  shuffle_questions     Int?        @default(0)
+  shuffle_options       Int?        @default(0)
+  show_score            Int?        @default(1)
+  created_at            DateTime?   @default(now())
+  group_id              Int?
+  allow_late_submission Int?        @default(0)
+  start_method          String?     @default("auto")
+  theme_config          String?
+  show_in_dashboard     Int?        @default(0)
+  enable_video_proctoring Int?      @default(0)
+
+  creator               User?       @relation(fields: [created_by], references: [id])
+  group                 ExamGroup?  @relation(fields: [group_id], references: [id])
+
+  questions             Question[]
+  submissions           Submission[]
+  sections              ExamSection[]
+
+  @@map("exams")
+}
+
+model Question {
+  id              Int          @id @default(autoincrement())
+  exam_id         String?
+  type            String?
+  question_text   String?
+  options         String?
+  correct_answers String?
+  image_url       String?
+  is_required     Int?         @default(0)
+  section_id      Int?
+
+  exam            Exam?        @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  section         ExamSection? @relation(fields: [section_id], references: [id])
+
+  @@map("questions")
+}
+
+model Submission {
+  id                  Int       @id @default(autoincrement())
+  exam_id             String?
+  student_id          String?
+  std_id              String?
+  answers             String?
+  status              String?   @default("ongoing")
+  score               Float?
+  raw_score           Int?
+  total_questions     Int?
+  submitted_questions String?
+  started_at          DateTime? @default(now())
+  submitted_at        DateTime?
+  is_late             Int?      @default(0)
+
+  exam                Exam?     @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  student             User?     @relation(fields: [student_id], references: [id])
+
+  activity_logs       ActivityLog[]
+
+  @@map("submissions")
+}
+
+model ActivityLog {
+  id            Int         @id @default(autoincrement())
+  submission_id Int?
+  event_type    String?
+  timestamp     DateTime?   @default(now())
+
+  submission    Submission? @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
+model ExamGroup {
+  id         Int       @id @default(autoincrement())
+  name       String?
+  created_by String?
+  created_at DateTime? @default(now())
+
+  creator    User?     @relation(fields: [created_by], references: [id])
+  exams      Exam[]
+
+  @@map("exam_groups")
+}
+
+model ExamSection {
+  id          Int     @id @default(autoincrement())
+  exam_id     String?
+  title       String?
+  description String?
+  order_index Int?    @default(0)
+
+  exam        Exam?      @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  questions   Question[]
+
+  @@map("exam_sections")
+}
+
+model ExamBackup {
+  id                Int       @id @default(autoincrement())
+  exam_id           String
+  exam_title        String
+  course            String?
+  backup_data       String
+  total_submissions Int?      @default(0)
+  total_questions   Int?      @default(0)
+  created_by        String
+  created_at        DateTime? @default(now())
+  backup_type       String?   @default("manual")
+
+  @@map("exam_backups")
+}
