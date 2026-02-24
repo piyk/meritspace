@@ -29,6 +29,7 @@
 
 ### 📝 Assessment & Form Management
 - **AI Question Generator**: Generate high-quality multiple-choice or short-answer questions using **Google Gemini** from a text prompt or a **PDF upload**.
+- **Bloom's Taxonomy Integration**: Tailor AI-generated questions to specific cognitive levels (Remember, Understand, Apply, Analyze, Evaluate, Create) for better pedagogical alignment.
 - **Bulk Import/Export**: Import questions from CSV/Excel files with full support for mixed character encoding (Thai/English); export complete assessment data to **XLSX**.
 - **Rich Settings**: Shuffle questions/answers, set time limits, schedule start times, and toggle instant feedback.
 - **Collection Management**: Organize assessments into logical groups for easier administration.
@@ -76,7 +77,7 @@
 | **Prisma ORM** | Database access & migrations |
 | **PostgreSQL** | Primary relational database |
 | **Socket.io** | Real-time event broadcasting |
-| **Google Generative AI** (Gemini) | AI-powered question generation |
+| **Google Generative AI** (Gemini) | AI-powered question generation with Bloom's Taxonomy support |
 | **Multer** | PDF file uploads for AI generation |
 | **XLSX** | Excel file generation for exports |
 | **iconv-lite** | Thai/multi-encoding CSV parsing |
@@ -95,8 +96,8 @@
 
 ### 2. Clone & Install
 ```bash
-git clone https://github.com/Piyk/exam-flow.git
-cd exam-flow
+git clone https://github.com/Piyk/meritspace.git
+cd meritspace
 
 # Install all dependencies (root + client + server)
 npm run install-all

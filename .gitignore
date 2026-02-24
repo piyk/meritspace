@@ -20,7 +20,6 @@ pnpm-debug.log*
 server/.env
 server/.env.production
 client/vite.config.ts
-server/exam_system.sql
 
 # macOS-specific files
 .DS_Store
