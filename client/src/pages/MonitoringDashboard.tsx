@@ -81,6 +81,7 @@ const MonitoringDashboard = () => {
     const peerConnections = useRef<Record<string, RTCPeerConnection>>({});
     const examRef = useRef<Exam | null>(null);
     const studentStatusRef = useRef<Record<string, StudentState>>({});
+    const stableOrderRef = useRef<string[]>([]);
 
     useEffect(() => {
         examRef.current = exam;
@@ -461,6 +462,33 @@ const MonitoringDashboard = () => {
         }
     };
 
+    // Build a stable order: sort only when new participants appear, never re-sort on status change
+    const stableParticipantOrder = useMemo(() => {
+        const currentIds = Object.keys(studentStatus);
+        const existingSet = new Set(stableOrderRef.current);
+        const newIds = currentIds.filter(id => !existingSet.has(id));
+
+        if (newIds.length > 0) {
+            // Sort only the new IDs by status priority, then name
+            const statusOrder: Record<StudentState['status'], number> = { focused: 0, away: 1, offline: 2, submitted: 3 };
+            newIds.sort((a, b) => {
+                const sa = studentStatus[a];
+                const sb = studentStatus[b];
+                const orderA = statusOrder[sa.status] ?? 4;
+                const orderB = statusOrder[sb.status] ?? 4;
+                if (orderA !== orderB) return orderA - orderB;
+                return (sa.name || '').localeCompare(sb.name || '');
+            });
+            stableOrderRef.current = [...stableOrderRef.current, ...newIds];
+        }
+
+        // Remove IDs that no longer exist
+        const validSet = new Set(currentIds);
+        stableOrderRef.current = stableOrderRef.current.filter(id => validSet.has(id));
+
+        return stableOrderRef.current;
+    }, [studentStatus]);
+
     const stats = useMemo(() => {
         const students = Object.values(studentStatus);
         const total = students.length;
@@ -646,19 +674,12 @@ const MonitoringDashboard = () => {
                                 </p>
                             </div>
                         ) : (
-                            Object.entries(studentStatus)
-                                .sort(([, a], [, b]) => {
-                                    // Priority: focused > away > offline > submitted
-                                    const statusOrder: Record<StudentState['status'], number> = { focused: 0, away: 1, offline: 2, submitted: 3 };
-                                    const orderA = statusOrder[a.status] ?? 4;
-                                    const orderB = statusOrder[b.status] ?? 4;
-                                    if (orderA !== orderB) return orderA - orderB;
-                                    return (a.name || '').localeCompare(b.name || '');
-                                })
-                                .map(([id, info]) => (
+                            stableParticipantOrder
+                                .map(id => ({ id, info: studentStatus[id] }))
+                                .filter(({ info }) => !!info)
+                                .map(({ id, info }) => (
                                     <motion.div
                                         key={id}
-                                        layout
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         className={`group relative flex flex-col p-2 rounded-2xl border transition-all duration-300 ${info.status === 'offline'
