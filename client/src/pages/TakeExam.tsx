@@ -825,7 +825,7 @@ const TakeExam = () => {
                                             <button
                                                 key={oIdx}
                                                 onClick={() => toggleSelect(q.id, q.type as 'multiple_choice' | 'checkboxes', option)}
-                                                className="text-left w-full px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all duration-200 flex items-center gap-3"
+                                                className="text-left w-full px-4 py-3 rounded-xl border text-sm font-semibold transition-all duration-200 flex items-center gap-3"
                                                 style={{
                                                     backgroundColor: selected ? 'hsl(var(--primary))' : 'hsl(var(--surface))',
                                                     borderColor: selected ? 'hsl(var(--primary))' : 'hsl(var(--border))',

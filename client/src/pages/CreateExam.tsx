@@ -680,7 +680,7 @@ const CreateExam = () => {
                 </div>
             </header>
 
-            <div className="max-w-5xl mx-auto pt-20 md:pt-24 pb-16 px-3 md:px-6">
+            <div className="max-w-5xl mx-auto pt-3 md:pt-3 pb-3 px-3 md:px-6">
                 <form id="exam-form" onSubmit={handleSubmit} className="space-y-6">
                     {/* Exam Header Card */}
                     <div className="card-minimal border-t-4 border-t-primary !p-4 md:!p-6">

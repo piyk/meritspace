@@ -698,8 +698,8 @@ const Dashboard = () => {
                                                         }`}
                                                     onClick={(e) => exam.submission_status === 'submitted' && e.preventDefault()}
                                                 >
-                                                    {exam.submission_status === 'submitted' ? 'Done' : 'Enter'}
-                                                    <FontAwesomeIcon icon={faChevronRight} />
+                                                    {exam.submission_status === 'submitted' ? `Score: ${exam.raw_score} / ${exam.total_questions}` : <>Enter <FontAwesomeIcon icon={faChevronRight} /></>}
+
                                                 </Link>
                                             )}
                                         </div>

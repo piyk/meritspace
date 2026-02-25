@@ -497,17 +497,7 @@ const MonitoringDashboard = () => {
                         <h4 className="text-md md:text-md font tracking-[0.2em] text-foreground">
                             {exam?.title || 'MONITORING'}
                         </h4>
-                        {exam && (
-                            <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${exam.status === 'active'
-                                ? (exam.start_time && new Date(exam.start_time) > new Date() ? 'bg-orange-500/5 text-orange-500 border-orange-500/20' : 'bg-emerald-500/5 text-emerald-500 border-emerald-500/20 shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]')
-                                : 'bg-red-500/5 text-red-500 border-red-500/20'
-                                }`}>
-                                {exam.status === 'active'
-                                    ? (exam.start_time && new Date(exam.start_time) > new Date() ? t('scheduled') : '● ' + t('live_session'))
-                                    : exam.status
-                                }
-                            </div>
-                        )}
+
                     </div>
                     <p className="text-muted-foreground/50 text-[11px] font-bold tracking-[0.1em] uppercase mt-2 italic">{exam?.course}</p>
                 </div>

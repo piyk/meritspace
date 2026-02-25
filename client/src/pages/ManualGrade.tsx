@@ -299,28 +299,28 @@ const ManualGrade = () => {
                 </div>
             </header>
 
-            <div className="max-w-5xl mx-auto pt-20 md:pt-24 pb-16 px-3 md:px-6">
+            <div className="max-w-5xl mx-auto pt-3 md:pt-3 pb-3 px-3 md:px-6">
                 {/* Exam Header Card - similar to CreateExam */}
                 <div className="card-minimal border-t-4 border-t-primary !p-4 md:!p-6 mb-6">
                     <h1 className="text-xl md:text-2xl font-black mb-1">{exam.title}</h1>
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{exam.course}</p>
                 </div>
 
-                {/* Config Panel */}
-                <div className="card-minimal !p-3 mb-6 space-y-3">
+                {/* Grading Navigation Hub */}
+                <div className="card-minimal !p-2 md:!p-3 mb-8 space-y-3">
                     {submissions.length > 0 ? (
-                        <div className="flex flex-col md:flex-row items-stretch gap-2">
-                            {/* Student Selector */}
-                            <div className="flex items-center gap-1.5 flex-1 min-w-0 bg-surface/50 rounded-xl border border-border/50 p-1.5">
+                        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2">
+                            {/* Student Selector & Navigation */}
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <button
                                     onClick={() => {
                                         const idx = submissions.findIndex(s => s.id === selectedSubmissionId);
                                         if (idx > 0) handleStudentChange(submissions[idx - 1].id);
                                     }}
                                     disabled={submissions.findIndex(s => s.id === selectedSubmissionId) <= 0}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-surface hover:bg-surface-hover transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+                                    className="w-10 h-10 rounded-xl flex items-center justify-center border border-border bg-surface hover:bg-surface-hover hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
                                 >
-                                    <FontAwesomeIcon icon={faChevronLeft} className="text-[10px]" />
+                                    <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
                                 </button>
                                 <div className="flex-1 min-w-0">
                                     <CustomSelect
@@ -332,6 +332,7 @@ const ManualGrade = () => {
                                         onChange={handleStudentChange}
                                         icon={faUser}
                                         placeholder={t('select_student')}
+                                        className="!border-none !bg-transparent !shadow-none"
                                     />
                                 </div>
                                 <button
@@ -340,71 +341,81 @@ const ManualGrade = () => {
                                         if (idx < submissions.length - 1) handleStudentChange(submissions[idx + 1].id);
                                     }}
                                     disabled={submissions.findIndex(s => s.id === selectedSubmissionId) >= submissions.length - 1}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-surface hover:bg-surface-hover transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+                                    className="w-10 h-10 rounded-xl flex items-center justify-center border border-border bg-surface hover:bg-surface-hover hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
                                 >
-                                    <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
+                                    <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
                                 </button>
-                                <span className="text-[10px] font-bold text-muted-foreground/40 tabular-nums flex-shrink-0 px-1">
-                                    {submissions.findIndex(s => s.id === selectedSubmissionId) + 1}/{submissions.length}
-                                </span>
+                                <div className="hidden sm:flex flex-col items-center justify-center border-l border-border/50 pl-3 pr-1">
+                                    <span className="text-[10px] font-black text-muted-foreground/30 tabular-nums leading-tight">
+                                        {submissions.findIndex(s => s.id === selectedSubmissionId) + 1}
+                                    </span>
+                                    <div className="h-[1px] w-2 bg-border/50 my-0.5"></div>
+                                    <span className="text-[10px] font-black text-muted-foreground/30 tabular-nums leading-tight">
+                                        {submissions.length}
+                                    </span>
+                                </div>
                             </div>
 
                             {selectedSubmission && (
-                                <>
-                                    {/* Student Info */}
-                                    <div className="flex items-center gap-2.5 bg-surface/50 rounded-xl border border-border/50 p-1.5 px-3 flex-shrink-0">
-                                        <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-primary/20 flex-shrink-0">
+                                <div className="flex items-center gap-2">
+                                    {/* Student Info Badge */}
+                                    <div className="flex items-center gap-3 rounded-2xl  p-2 pr-4 flex-shrink-0">
+                                        <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-primary/20 flex-shrink-0 relative group">
                                             {selectedSubmission.student_picture ? (
                                                 <img src={selectedSubmission.student_picture} alt="" className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                                                    <span className="text-[10px] font-black text-primary">{selectedSubmission.student_name?.charAt(0)}</span>
+                                                    <span className="text-sm font-black text-primary">{selectedSubmission.student_name?.charAt(0)}</span>
                                                 </div>
                                             )}
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-xs font-bold truncate leading-tight">{selectedSubmission.student_name}</p>
-                                            <p className="text-[10px] text-muted-foreground truncate leading-tight">{selectedSubmission.std_id || selectedSubmission.student_email.split('@')[0]}</p>
+                                            <p className="text-xs font-black truncate leading-tight uppercase tracking-tight">{selectedSubmission.student_name}</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground/60 truncate leading-tight mt-0.5">{selectedSubmission.std_id || selectedSubmission.student_email.split('@')[0]}</p>
                                         </div>
                                     </div>
 
-                                    {/* Score Summary */}
-                                    <div className="flex items-center gap-2 bg-primary/5 rounded-xl border border-primary/20 p-1.5 px-3 flex-shrink-0">
-                                        <div className="text-center">
-                                            <div className="text-xl font-black text-primary tabular-nums leading-tight">
-                                                {totalManualScore}<span className="text-xs text-muted-foreground font-bold">/{totalMaxScore}</span>
+                                    {/* Score Summary Plaque */}
+                                    <div className="flex items-center gap-3  rounded-2xl p-2 px-4 flex-shrink-0">
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                            <FontAwesomeIcon icon={faListCheck} />
+                                        </div>
+                                        <div>
+                                            <div className="text-lg font-black text-primary tabular-nums leading-tight">
+                                                {totalManualScore}<span className="text-xs text-muted-foreground/50 font-bold ml-1">/ {totalMaxScore}</span>
                                             </div>
-                                            <p className="text-[8px] font-bold uppercase tracking-widest text-primary/50">{t('manual_score')}</p>
+                                            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-primary/40">{t('manual_score')}</p>
                                         </div>
                                     </div>
-                                </>
+                                </div>
                             )}
                         </div>
                     ) : (
-                        <div className="p-4 bg-surface/50 rounded-xl border border-border/50 text-center">
-                            <p className="text-sm text-muted-foreground font-semibold">{t('no_submissions')}</p>
+                        <div className="p-6 bg-surface/50 rounded-2xl border border-border/50 text-center">
+                            <p className="text-sm text-muted-foreground font-bold uppercase tracking-widest">{t('no_submissions')}</p>
                         </div>
                     )}
 
-                    {/* Question Type Filter */}
+                    {/* Question Type Filter Bar */}
                     {questions.length > 0 && (
-                        <div className="pt-2 border-t border-border/30">
-                            <div className="flex items-center gap-2 mb-1.5">
-                                <FontAwesomeIcon icon={faFilter} className="text-[10px] text-muted-foreground/40" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">{t('filter_by_type')}</span>
+                        <div className="pt-3 border-t border-border/30">
+                            <div className="flex items-center gap-3 mb-2 px-1">
+                                <FontAwesomeIcon icon={faFilter} className="text-[10px] text-muted-foreground/30" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30">{t('filter_by_type')}</span>
+                                <div className="h-px flex-1 bg-border/20"></div>
                             </div>
-                            <div className="flex flex-wrap gap-1.5">
+                            <div className="flex flex-wrap gap-2">
                                 {[{ key: 'all' as const, label: t('all') }, ...availableTypes.map(type => ({ key: type as typeof filterType, label: t(type as any) || type.replace('_', ' ') }))].map(({ key, label }) => (
                                     <button
                                         key={key}
                                         onClick={() => setFilterType(key)}
-                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border transition-all duration-200 ${filterType === key
-                                            ? 'bg-primary/10 text-primary border-primary/30'
-                                            : 'bg-surface/50 text-muted-foreground border-border/50 hover:border-primary/20 hover:text-primary/80'
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 ${filterType === key
+                                            ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.02]'
+                                            : 'bg-surface/50 text-muted-foreground border-border/50 hover:border-primary/30 hover:text-primary hover:bg-primary/5'
                                             }`}
                                     >
                                         {label}
-                                        <span className={`ml-1.5 tabular-nums ${filterType === key ? 'text-primary/60' : 'text-muted-foreground/30'}`}>
+                                        <span className={`ml-2 tabular-nums opacity-60`}>
                                             {questionTypeCounts[key] || 0}
                                         </span>
                                     </button>
@@ -420,15 +431,19 @@ const ManualGrade = () => {
                         {groupedQuestions.map((group, gIdx) => {
                             return (
                                 <div key={gIdx} className="space-y-4">
-                                    {/* Section Header */}
+                                    {/* Section Header Card — same as CreateExam */}
                                     {group.section && (
-                                        <div className="flex items-center gap-3 pt-4">
-                                            <div className="h-8 w-1 bg-primary rounded-full"></div>
-                                            <div>
-                                                <h3 className="text-sm font-bold uppercase tracking-wider">{group.section.title}</h3>
-                                                {group.section.description && (
-                                                    <p className="text-xs text-muted-foreground">{group.section.description}</p>
-                                                )}
+                                        <div className="card-minimal border-l-4 border-l-primary/50 !p-4 md:!p-6 mb-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                                    <FontAwesomeIcon icon={faListCheck} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg md:text-xl font-black uppercase tracking-tight">{group.section.title}</h3>
+                                                    {group.section.description && (
+                                                        <p className="text-xs md:text-sm text-muted-foreground font-bold mt-0.5">{group.section.description}</p>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -452,61 +467,77 @@ const ManualGrade = () => {
                                                     exit={{ opacity: 0, scale: 0.95 }}
                                                     className="relative"
                                                 >
-                                                    <div className={`card-minimal space-y-4 transition-all duration-300 !p-4 md:!p-6 border-l-4 ${isFullScore
+                                                    <div className={`card-minimal space-y-4 md:space-y-6 transition-all duration-300 !p-4 md:!p-6 border-l-4 group/q hover:shadow-xl hover:shadow-primary/5 ${isFullScore
                                                         ? 'border-l-emerald-500/50'
                                                         : isZero
                                                             ? 'border-l-red-500/50'
                                                             : 'border-l-amber-500/50'
                                                         }`}>
                                                         {/* Question Header */}
-                                                        <div className="flex items-start justify-between gap-4">
+                                                        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                                                             <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-3 mb-2">
-                                                                    <span className="text-[10px] font-bold text-muted-foreground/50 bg-surface px-2 py-0.5 rounded-md border border-border tabular-nums">
-                                                                        Q{currentIdx}
-                                                                    </span>
-                                                                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md border ${q.type === 'multiple_choice' || q.type === 'checkboxes'
+                                                                <div className="flex flex-wrap items-center gap-2 mb-3">
+                                                                    <div className="h-6 flex items-center gap-2 bg-surface px-2 shadow-sm rounded-lg border border-border">
+                                                                        <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">Q</span>
+                                                                        <div className="h-3 w-[1px] bg-border"></div>
+                                                                        <span className="text-[10px] font-black text-primary tabular-nums">
+                                                                            {currentIdx}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-sm ${q.type === 'multiple_choice' || q.type === 'checkboxes'
                                                                         ? 'bg-indigo-500/5 text-indigo-500 border-indigo-500/20'
                                                                         : 'bg-amber-500/5 text-amber-500 border-amber-500/20'
                                                                         }`}>
                                                                         {t(q.type as any) || q.type.replace('_', ' ')}
                                                                     </span>
                                                                     {scoreVal !== autoScore && (
-                                                                        <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md bg-violet-500/5 text-violet-500 border border-violet-500/20">
+                                                                        <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-violet-500/5 text-violet-500 border border-violet-500/20 shadow-sm animate-pulse">
                                                                             {t('manually_adjusted')}
                                                                         </span>
                                                                     )}
                                                                 </div>
-                                                                <p className="text-base md:text-lg font-semibold leading-relaxed">{q.question_text}</p>
+                                                                <p className="text-lg md:text-xl font-bold leading-relaxed text-foreground/90">{q.question_text}</p>
                                                             </div>
 
-                                                            {/* Score Control */}
-                                                            <div className="flex-shrink-0 flex flex-col items-center gap-1">
-                                                                <div className={`rounded-2xl border-2 transition-all duration-300 px-2 py-1.5 flex items-center gap-2 ${isFullScore
-                                                                    ? 'bg-emerald-500/10 border-emerald-500/30'
+                                                            {/* Score Control Hub */}
+                                                            <div className="flex-shrink-0 flex flex-col items-end gap-1.5 self-end sm:self-start">
+                                                                <div className={`rounded-2xl border-2 transition-all duration-500 p-1 flex items-center gap-1 shadow-sm ${isFullScore
+                                                                    ? 'bg-emerald-500/5 border-emerald-500/20'
                                                                     : isZero
-                                                                        ? 'bg-red-500/10 border-red-500/30'
-                                                                        : 'bg-amber-500/10 border-amber-500/30'
+                                                                        ? 'bg-red-500/5 border-red-500/20'
+                                                                        : 'bg-amber-500/5 border-amber-500/20'
                                                                     }`}>
                                                                     <button
                                                                         onClick={() => setScore(q.id, scoreVal - 1, maxScore)}
                                                                         disabled={scoreVal <= 0}
-                                                                        className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold bg-surface/80 border border-border hover:bg-surface-hover transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                                                        className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold bg-surface border border-border hover:bg-surface-hover hover:text-red-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed group/btn"
                                                                     >
-                                                                        −
+                                                                        <span className="group-active/btn:scale-90 transition-transform">−</span>
                                                                     </button>
-                                                                    <span className={`text-lg font-black tabular-nums min-w-[2ch] text-center ${isFullScore ? 'text-emerald-600' : isZero ? 'text-red-500' : 'text-amber-600'}`}>
-                                                                        {scoreVal}
-                                                                    </span>
+                                                                    <div className="min-w-[4rem] text-center">
+                                                                        <div className={`text-xl font-black tabular-nums transition-colors duration-300 ${isFullScore ? 'text-emerald-600' : isZero ? 'text-red-500' : 'text-amber-600'}`}>
+                                                                            {scoreVal}
+                                                                        </div>
+                                                                        <div className="h-[2px] w-full bg-border/30 rounded-full mt-0.5 overflow-hidden">
+                                                                            <motion.div
+                                                                                className={`h-full ${isFullScore ? 'bg-emerald-500' : isZero ? 'bg-red-500' : 'bg-amber-500'}`}
+                                                                                initial={{ width: 0 }}
+                                                                                animate={{ width: `${(scoreVal / maxScore) * 100}%` }}
+                                                                                transition={{ duration: 0.5 }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
                                                                     <button
                                                                         onClick={() => setScore(q.id, scoreVal + 1, maxScore)}
                                                                         disabled={scoreVal >= maxScore}
-                                                                        className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold bg-surface/80 border border-border hover:bg-surface-hover transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                                                        className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold bg-surface border border-border hover:bg-surface-hover hover:text-emerald-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed group/btn"
                                                                     >
-                                                                        +
+                                                                        <span className="group-active/btn:scale-90 transition-transform">+</span>
                                                                     </button>
                                                                 </div>
-                                                                <span className="text-[9px] font-bold text-muted-foreground/50 tabular-nums">/ {maxScore}</span>
+                                                                <span className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] px-2">
+                                                                    / {maxScore} {t('score')}
+                                                                </span>
                                                             </div>
                                                         </div>
 
