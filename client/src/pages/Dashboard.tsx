@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faBookOpen, faClock, faHeartPulse, faChevronRight, faBolt, faShieldHalved, faWifi, faCopy, faFolderPlus, faFolder, faTrash, faEllipsisVertical, faXmark, faCheck, faCirclePlus, faDownload, faRotateRight, faPen, faQrcode, faMagnifyingGlass, faFileExport, faFileImport } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faBookOpen, faClock, faHeartPulse, faChevronRight, faBolt, faShieldHalved, faWifi, faCopy, faFolderPlus, faFolder, faTrash, faEllipsisVertical, faXmark, faCheck, faCirclePlus, faDownload, faRotateRight, faPen, faQrcode, faMagnifyingGlass, faFileExport, faFileImport, faListCheck } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import showToast from '../utils/swal';
 import { API_BASE_URL } from '../config';
@@ -678,6 +678,10 @@ const Dashboard = () => {
                                                         <FontAwesomeIcon icon={faDownload} className="text-xs" />
                                                     </button>
 
+                                                    <Link to={`/grade/${exam.id}`} className="w-8 h-8 flex items-center justify-center rounded-full text-violet-500/60 hover:bg-violet-500/5 transition-all" title={t('grade_submissions')}>
+                                                        <FontAwesomeIcon icon={faListCheck} className="text-xs" />
+                                                    </Link>
+
                                                     <button
                                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveActionMenuId(exam.id); }}
                                                         className="w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:bg-surface-hover transition-all"
@@ -857,6 +861,19 @@ const Dashboard = () => {
                                             <div>
                                                 <p className="text-sm font-bold">{t('real_time_monitor')}</p>
                                                 <p className="text-[10px] text-muted-foreground">Track live submissions</p>
+                                            </div>
+                                        </Link>
+                                        <Link
+                                            to={`/grade/${selectedExam.id}`}
+                                            onClick={() => setActiveActionMenuId(null)}
+                                            className="flex items-center gap-3.5 w-full text-left px-4 py-3.5 text-sm font-semibold hover:bg-surface rounded-xl transition-all active:scale-[0.98]"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+                                                <FontAwesomeIcon icon={faListCheck} className="text-sm text-violet-500" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold">{t('grade_submissions')}</p>
+                                                <p className="text-[10px] text-muted-foreground">Review & score answers</p>
                                             </div>
                                         </Link>
                                     </div>

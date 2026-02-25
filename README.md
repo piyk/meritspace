@@ -12,7 +12,7 @@
   [![Google Gemini](https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=google-gemini&logoColor=white)](https://deepmind.google/technologies/gemini/)
   [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
 
-  **MeritSpace** is a sleek, full-stack application designed to streamline the form and assessment process for Lecturers and Students. With real-time monitoring, AI-powered question generation, and a premium glassmorphism UI, it offers a sophisticated experience for modern education.
+  **MeritSpace** is a sleek, full-stack application designed to streamline the form and assessment process for Lecturers and Students. With real-time monitoring, AI-powered question generation, manual grading, and a premium glassmorphism UI, it offers a sophisticated experience for modern education.
 
   [Explore Features](#-features) • [Tech Stack](#-tech-stack) • [Installation](#-how-to-run) • [Configuration](#-configuration)
 </div>
@@ -30,12 +30,22 @@
 ### 📝 Assessment & Form Management
 - **AI Question Generator**: Generate high-quality multiple-choice or short-answer questions using **Google Gemini** from a text prompt or a **PDF upload**.
 - **Bloom's Taxonomy Integration**: Tailor AI-generated questions to specific cognitive levels (Remember, Understand, Apply, Analyze, Evaluate, Create) for better pedagogical alignment.
-- **Bulk Import/Export**: Import questions from CSV/Excel files with full support for mixed character encoding (Thai/English); export complete assessment data to **XLSX**.
-- **Rich Settings**: Shuffle questions/answers, set time limits, schedule start times, and toggle instant feedback.
+- **Section-Based Organization**: Structure assessments into sections with titles, descriptions, and ordered questions.
+- **Bulk Import/Export**: Import questions from CSV/Excel files with full support for mixed character encoding (Thai/English); export complete assessment data to **JSON** or **XLSX**.
+- **Rich Settings**: Shuffle questions/answers, set time limits, schedule start times, toggle instant feedback, and control late submissions.
 - **Collection Management**: Organize assessments into logical groups for easier administration.
 - **QR Code Sharing**: Instantly share public assessments via auto-generated QR codes.
 - **Bulk Operations**: Efficiently manage users, exams, groups, and backups with bulk delete in the Admin Panel.
 - **Deploy & Blueprint**: Push live assessments with a single click using the "Deploy Form Blueprint" workflow.
+- **Duplicate Assessments**: Clone existing forms with all questions and sections preserved.
+
+### ✏️ Manual Grading & Review
+- **Manual Grading Interface**: A dedicated, redesigned UI for lecturers to review and score student submissions question-by-question.
+- **Per-Question Score Control**: Increment/decrement scores with visual feedback (color-coded borders for full, partial, or zero marks).
+- **Student Navigation**: Quickly switch between students using a selector with prev/next navigation and a dropdown.
+- **Question Type Filtering**: Filter the review by question type (multiple choice, checkboxes, short answer, paragraph).
+- **Auto vs Manual Indicators**: See at a glance which scores have been manually adjusted versus auto-graded.
+- **Section-Grouped Review**: Questions are grouped by section for organized grading.
 
 ### 🛡️ Anti-Cheat & Real-time Monitoring
 - **Live Monitoring Dashboard**: Lecturers see a real-time participant grid and activity stream powered by **WebSockets (Socket.io)**.
@@ -43,11 +53,14 @@
 - **Online Presence**: See which students are currently active in a session at a glance.
 - **Live Event Feed**: Instant log of key events — `FOCUS_LOST`, `FOCUS_GAINED`, `CONNECTED`, `SUBMITTED`.
 - **WebRTC Peer Connections**: Supports peer-to-peer signaling for advanced real-time communication.
+- **Video Proctoring**: Optional video proctoring mode for enhanced exam integrity.
+- **Activity Log Export**: Download detailed activity logs as CSV for post-exam analysis.
 
 ### 🎨 Personalized Exam Experience
 - **In-Exam Appearance Panel**: Students can customize their exam UI on-the-fly via a floating **Appearance Settings** panel.
 - **Theme & Color Presets**: Switch between Light/Dark/Jet-Black modes and multiple color accent presets without leaving the exam.
 - **Adaptive Layout**: The exam interface responds smoothly to all theme changes using CSS custom properties.
+- **Internationalization**: Full localization support with language context for multi-language deployments.
 
 ### 📊 Results, Grading & Data
 - **Automated Grading**: Instant scoring for multiple-choice and checkbox question types.
@@ -78,7 +91,7 @@
 | **PostgreSQL** | Primary relational database |
 | **Socket.io** | Real-time event broadcasting |
 | **Google Generative AI** (Gemini) | AI-powered question generation with Bloom's Taxonomy support |
-| **Multer** | PDF file uploads for AI generation |
+| **Multer** | PDF & image file uploads |
 | **XLSX** | Excel file generation for exports |
 | **iconv-lite** | Thai/multi-encoding CSV parsing |
 | **jsonwebtoken** | JWT-based session authentication |
@@ -104,7 +117,9 @@ npm run install-all
 ```
 
 ### 3. Configuration
-Create your environment file at `server/.env` (use `server/.env.sample` as a reference):
+Create your environment files:
+
+**`server/.env`** (use `server/.env.sample` as a reference):
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/exam_flow"
 GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
@@ -114,9 +129,13 @@ ADMIN_EMAIL=your_email@domain.com
 ALLOWED_DOMAINS=domain.com,gmail.com
 PORT=your_port
 FRONTEND_URL=your_frontend_url
-GEMINI_MODEL=your_gemini_model
+GEMINI_MODEL=gemini-2.5-flash
 ```
-> Also update the Google Client ID in `client/src/App.tsx` if required.
+
+**`client/.env`**:
+```env
+VITE_GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+```
 
 ### 4. Database Setup
 Initialize the database schema with Prisma:
@@ -159,6 +178,7 @@ MeritSpace features a dynamic, persistent theming system. Users can switch betwe
 - All sessions are secured via **JWT tokens** verified against Google OAuth.
 - **CORS** and **domain allow-listing** protect the API for organizational deployments.
 - Exam state and answers are persisted server-side to prevent client-side tampering.
+- Session grace periods handle disconnections gracefully without losing monitoring state.
 
 ---
 

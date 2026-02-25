@@ -11,6 +11,7 @@ import CreateExam from './pages/CreateExam';
 import TakeExam from './pages/TakeExam';
 import AdminPanel from './pages/AdminPanel';
 import MonitoringDashboard from './pages/MonitoringDashboard';
+import ManualGrade from './pages/ManualGrade';
 import Navbar from './components/Navbar';
 import Appearance from './pages/Appearance';
 import { GOOGLE_CLIENT_ID } from './config';
@@ -49,6 +50,7 @@ const AppInner: React.FC = () => {
                                 <Route path="/create-form" element={<ProtectedRoute roles={['LECTURER', 'ADMIN']}><CreateExam /></ProtectedRoute>} />
                                 <Route path="/edit-form/:examId" element={<ProtectedRoute roles={['LECTURER', 'ADMIN']}><CreateExam /></ProtectedRoute>} />
                                 <Route path="/monitor/:examId" element={<ProtectedRoute roles={['LECTURER', 'ADMIN']}><MonitoringDashboard /></ProtectedRoute>} />
+                                <Route path="/grade/:examId" element={<ProtectedRoute roles={['LECTURER', 'ADMIN']}><ManualGrade /></ProtectedRoute>} />
                                 <Route path="/take-form/:examId" element={<ProtectedRoute><TakeExam /></ProtectedRoute>} />
                             </Routes>
                         </div>

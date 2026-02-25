@@ -25,6 +25,7 @@ interface Question {
     correct_answers: string[];
     image_url: string | null;
     is_required: boolean;
+    score: number;
 }
 
 interface Section {
@@ -94,7 +95,7 @@ const CreateExam = () => {
                 title: t('general_questions'),
                 description: '',
                 questions: [
-                    { type: 'multiple_choice', question_text: '', options: [''], correct_answers: [], image_url: null, is_required: false }
+                    { type: 'multiple_choice', question_text: '', options: [''], correct_answers: [], image_url: null, is_required: false, score: 1 }
                 ]
             }
         ]
@@ -402,7 +403,8 @@ const CreateExam = () => {
                             options: [''],
                             correct_answers: [],
                             image_url: null,
-                            is_required: false
+                            is_required: false,
+                            score: 1
                         }
                     ]
                 };
@@ -1565,6 +1567,19 @@ const CreateExam = () => {
                                                             </div>
                                                             <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider transition-colors ${q.is_required ? 'text-primary' : 'text-muted-foreground'}`}>{t('required')}</span>
                                                         </label>
+
+                                                        {/* Score Input */}
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('score')}</span>
+                                                            <input
+                                                                type="number"
+                                                                min={1}
+                                                                max={100}
+                                                                value={q.score}
+                                                                onChange={(e) => updateQuestion(sIdx, qIdx, 'score', Math.max(1, parseInt(e.target.value) || 1))}
+                                                                className="w-16 h-8 text-center text-sm font-bold bg-surface border border-border rounded-lg focus:border-primary focus:outline-none transition-colors tabular-nums"
+                                                            />
+                                                        </div>
 
                                                         {/* Move to Section */}
                                                         {examData.sections.length > 1 && (

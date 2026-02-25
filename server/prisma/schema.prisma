@@ -66,6 +66,7 @@ model Question {
   correct_answers String?
   image_url       String?
   is_required     Int?         @default(0)
+  score           Int?         @default(1)
   section_id      Int?
 
   exam            Exam?        @relation(fields: [exam_id], references: [id], onDelete: Cascade)

@@ -19,6 +19,8 @@ pnpm-debug.log*
 # environment variables
 server/.env
 server/.env.production
+client/.env
+client/.env.production
 client/vite.config.ts
 
 # macOS-specific files

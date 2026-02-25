@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeartPulse, faChevronLeft, faUser, faTerminal, faDownload, faShieldHalved, faBolt, faCheckCircle, faUsers, faFileCsv, faRotateRight, faTrash, faVideo, faXmark, faQrcode, faCopy, faClock, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faHeartPulse, faChevronLeft, faUser, faTerminal, faDownload, faShieldHalved, faBolt, faCheckCircle, faUsers, faFileCsv, faRotateRight, faTrash, faVideo, faXmark, faQrcode, faCopy, faClock, faPen, faListCheck } from '@fortawesome/free-solid-svg-icons';
 import { QRCodeSVG } from 'qrcode.react';
 import axios from 'axios';
 import { useLanguage } from '../context/LanguageContext';
@@ -551,6 +551,9 @@ const MonitoringDashboard = () => {
                             <button onClick={handleExportResults} className="w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:bg-surface-hover transition-all" title="Export">
                                 <FontAwesomeIcon icon={faDownload} className="text-xs" />
                             </button>
+                            <Link to={`/grade/${examId}`} className="w-8 h-8 flex items-center justify-center rounded-full text-violet-500/60 hover:bg-violet-500/5 transition-all" title="Grade">
+                                <FontAwesomeIcon icon={faListCheck} className="text-xs" />
+                            </Link>
                             <button onClick={handleResetResults} className="w-8 h-8 flex items-center justify-center rounded-full text-red-400/60 hover:bg-red-500/5 transition-all" title="Reset">
                                 <FontAwesomeIcon icon={faTrash} className="text-xs" />
                             </button>

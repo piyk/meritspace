@@ -233,6 +233,24 @@ const translations = {
         'auth_powered_by': 'Authentication powered by Google.',
         'institutional_accounts': 'Only institutional accounts are permitted.',
         'protected_by': 'Protected by enterprise-grade security standards',
+
+        // Manual Grading
+        'manual_grading': 'Manual Grading',
+        'save_scores': 'Save Scores',
+        'select_student': 'Select Student',
+        'manual_score': 'Manual Score',
+        'student_answer': 'Student Answer',
+        'no_answer': 'No answer provided',
+        'no_submissions': 'No submissions yet',
+        'no_submissions_help': 'Student submissions will appear here once they submit their answers.',
+        'score_saved_success': 'Scores saved successfully!',
+        'score_save_error': 'Failed to save scores. Please try again.',
+        'manually_adjusted': 'Adjusted',
+        'no_correct_answer_set': 'No correct answer set',
+        'grade_submissions': 'Grade',
+        'filter_by_type': 'Filter by type',
+        'all': 'All',
+        'score': 'Score',
     },
     th: {
         // General
@@ -464,6 +482,24 @@ const translations = {
         'auth_powered_by': 'การยืนยันตัวตนโดย Google',
         'institutional_accounts': 'อนุญาตเฉพาะบัญชีสถาบันเท่านั้น',
         'protected_by': 'ได้รับการปกป้องด้วยมาตรฐานความปลอดภัยระดับองค์กร',
+
+        // Manual Grading
+        'manual_grading': 'ตรวจให้คะแนนด้วยตนเอง',
+        'save_scores': 'บันทึกคะแนน',
+        'select_student': 'เลือกนักเรียน',
+        'manual_score': 'คะแนนด้วยตนเอง',
+        'student_answer': 'คำตอบของนักเรียน',
+        'no_answer': 'ไม่มีคำตอบ',
+        'no_submissions': 'ยังไม่มีการส่งข้อมูล',
+        'no_submissions_help': 'การส่งข้อมูลของนักเรียนจะปรากฏที่นี่เมื่อพวกเขาส่งคำตอบ',
+        'score_saved_success': 'บันทึกคะแนนสำเร็จ!',
+        'score_save_error': 'ไม่สามารถบันทึกคะแนนได้ โปรดลองอีกครั้ง',
+        'manually_adjusted': 'ปรับแล้ว',
+        'no_correct_answer_set': 'ไม่ได้กำหนดคำตอบที่ถูกต้อง',
+        'grade_submissions': 'ตรวจ',
+        'filter_by_type': 'กรองตามประเภท',
+        'all': 'ทั้งหมด',
+        'score': 'คะแนน',
     }
 };
 

@@ -606,7 +606,7 @@ app.get('/api/exams/:id', authenticateToken, async (req, res) => {
     const submission = await db.prepare('SELECT * FROM submissions WHERE exam_id = ? AND student_id = ? AND status = \'submitted\'').get(examId, req.user.id);
 
     const sections = await db.prepare('SELECT * FROM exam_sections WHERE exam_id = ? ORDER BY order_index').all(examId);
-    const questions = await db.prepare('SELECT id, type, question_text, options, correct_answers, image_url, is_required, section_id FROM questions WHERE exam_id = ?').all(examId);
+    const questions = await db.prepare('SELECT id, type, question_text, options, correct_answers, image_url, is_required, score, section_id FROM questions WHERE exam_id = ?').all(examId);
 
     // Hide questions/sections from students if exam hasn't started yet
     let hideQuestions = false;
@@ -757,7 +757,7 @@ app.put('/api/exams/:id', authenticateToken, checkRole(['LECTURER', 'ADMIN']), a
 
         if (sections && sections.length > 0) {
             const insertSection = await db.prepare(`INSERT INTO exam_sections (exam_id, title, description, order_index) VALUES (?, ?, ?, ?)`);
-            const insertQ = await db.prepare(`INSERT INTO questions (exam_id, type, question_text, options, correct_answers, image_url, is_required, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+            const insertQ = await db.prepare(`INSERT INTO questions (exam_id, type, question_text, options, correct_answers, image_url, is_required, score, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
             for (let sIdx = 0; sIdx < sections.length; sIdx++) {
                 const section = sections[sIdx];
@@ -766,7 +766,7 @@ app.put('/api/exams/:id', authenticateToken, checkRole(['LECTURER', 'ADMIN']), a
                 if (section.questions && section.questions.length > 0) {
                     for (const q of section.questions) {
                         const options = q.type === 'short_answer' ? null : JSON.stringify(q.options || []);
-                        await insertQ.run(examId, q.type, q.question_text, options, JSON.stringify(q.correct_answers || []), q.image_url || null, q.is_required ? 1 : 0, sectionId);
+                        await insertQ.run(examId, q.type, q.question_text, options, JSON.stringify(q.correct_answers || []), q.image_url || null, q.is_required ? 1 : 0, q.score || 1, sectionId);
                     }
                 }
             };
@@ -826,7 +826,7 @@ app.post('/api/exams/:id/duplicate', authenticateToken, checkRole(['LECTURER', '
         const newExamId = generatedExamId;
 
         const insertSection = await db.prepare(`INSERT INTO exam_sections (exam_id, title, description, order_index) VALUES (?, ?, ?, ?)`);
-        const insertQ = await db.prepare(`INSERT INTO questions (exam_id, type, question_text, options, correct_answers, image_url, is_required, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+        const insertQ = await db.prepare(`INSERT INTO questions (exam_id, type, question_text, options, correct_answers, image_url, is_required, score, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
         // Map old section IDs to new section IDs for question linking
         const sectionMap = new Map();
@@ -839,7 +839,7 @@ app.post('/api/exams/:id/duplicate', authenticateToken, checkRole(['LECTURER', '
 
         for (const q of questions) {
             const newSectionIdForQ = q.section_id ? sectionMap.get(q.section_id) : null;
-            await insertQ.run(newExamId, q.type, q.question_text, q.options, q.correct_answers, q.image_url, q.is_required, newSectionIdForQ);
+            await insertQ.run(newExamId, q.type, q.question_text, q.options, q.correct_answers, q.image_url, q.is_required, q.score || 1, newSectionIdForQ);
         }
     })();
 
@@ -856,7 +856,7 @@ app.get('/api/exams/:id/export', authenticateToken, checkRole(['LECTURER', 'ADMI
     }
 
     const dbSections = await db.prepare('SELECT id, title, description, order_index FROM exam_sections WHERE exam_id = ? ORDER BY order_index').all(examId);
-    const questions = await db.prepare('SELECT type, question_text, options, correct_answers, image_url, is_required, section_id FROM questions WHERE exam_id = ?').all(examId);
+    const questions = await db.prepare('SELECT type, question_text, options, correct_answers, image_url, is_required, score, section_id FROM questions WHERE exam_id = ?').all(examId);
 
     const fullSections = dbSections.map(s => ({
         title: s.title,
@@ -868,7 +868,8 @@ app.get('/api/exams/:id/export', authenticateToken, checkRole(['LECTURER', 'ADMI
             options: q.options ? JSON.parse(q.options) : null,
             correct_answers: JSON.parse(q.correct_answers || '[]'),
             image_url: q.image_url,
-            is_required: q.is_required === 1
+            is_required: q.is_required === 1,
+            score: q.score || 1
         }))
     }));
 
@@ -878,7 +879,8 @@ app.get('/api/exams/:id/export', authenticateToken, checkRole(['LECTURER', 'ADMI
         options: q.options ? JSON.parse(q.options) : null,
         correct_answers: JSON.parse(q.correct_answers || '[]'),
         image_url: q.image_url,
-        is_required: q.is_required === 1
+        is_required: q.is_required === 1,
+        score: q.score || 1
     }));
 
     const exportData = {
@@ -944,7 +946,7 @@ app.post('/api/exams/import-exam', authenticateToken, checkRole(['LECTURER', 'AD
             console.log(`[Import] Exam created with ID: ${finalExamId}`);
 
             const insertSection = await db.prepare(`INSERT INTO exam_sections (exam_id, title, description, order_index) VALUES (?, ?, ?, ?)`);
-            const insertQ = await db.prepare(`INSERT INTO questions (exam_id, type, question_text, options, correct_answers, image_url, is_required, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+            const insertQ = await db.prepare(`INSERT INTO questions (exam_id, type, question_text, options, correct_answers, image_url, is_required, score, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
             if (data.sections && Array.isArray(data.sections)) {
                 for (let i = 0; i < data.sections.length; i++) {
@@ -953,7 +955,7 @@ app.post('/api/exams/import-exam', authenticateToken, checkRole(['LECTURER', 'AD
                     console.log(`[Import] Created section: ${s.title} (ID: ${sectionId})`);
                     if (s.questions && Array.isArray(s.questions)) {
                         for (const q of s.questions) {
-                            await insertQ.run(finalExamId, q.type, q.question_text, q.options ? JSON.stringify(q.options) : null, JSON.stringify(q.correct_answers || []), q.image_url || null, q.is_required ? 1 : 0, sectionId);
+                            await insertQ.run(finalExamId, q.type, q.question_text, q.options ? JSON.stringify(q.options) : null, JSON.stringify(q.correct_answers || []), q.image_url || null, q.is_required ? 1 : 0, q.score || 1, sectionId);
                         }
                         console.log(`[Import] Imported ${s.questions.length} questions for section ${s.title}`);
                     }
@@ -962,7 +964,7 @@ app.post('/api/exams/import-exam', authenticateToken, checkRole(['LECTURER', 'AD
 
             if (data.ungrouped_questions && Array.isArray(data.ungrouped_questions)) {
                 for (const q of data.ungrouped_questions) {
-                    await insertQ.run(finalExamId, q.type, q.question_text, q.options ? JSON.stringify(q.options) : null, JSON.stringify(q.correct_answers || []), q.image_url || null, q.is_required ? 1 : 0, null);
+                    await insertQ.run(finalExamId, q.type, q.question_text, q.options ? JSON.stringify(q.options) : null, JSON.stringify(q.correct_answers || []), q.image_url || null, q.is_required ? 1 : 0, q.score || 1, null);
                 }
                 console.log(`[Import] Imported ${data.ungrouped_questions.length} ungrouped questions`);
             }
@@ -1127,21 +1129,22 @@ app.post('/api/submissions', authenticateToken, async (req, res) => {
         }
     }
 
-    const questions = await db.prepare('SELECT id, type, question_text, options, correct_answers, image_url FROM questions WHERE exam_id = ?').all(exam_id);
+    const questions = await db.prepare('SELECT id, type, question_text, options, correct_answers, image_url, score FROM questions WHERE exam_id = ?').all(exam_id);
 
     let rawScore = 0;
     for (const q of questions) {
         const correct = JSON.parse(q.correct_answers || '[]');
         const student = answers[q.id] || [];
+        const qScore = q.score || 1;
 
         if (q.type === 'short_answer' || q.type === 'paragraph') {
             const studentAns = (student[0] || '').trim().toLowerCase();
             if (studentAns && correct.some(c => c.trim().toLowerCase() === studentAns)) {
-                rawScore += 1;
+                rawScore += qScore;
             }
         } else {
             if (correct.length === student.length && correct.every(v => student.includes(v))) {
-                rawScore += 1;
+                rawScore += qScore;
             }
         }
     };
@@ -1585,6 +1588,112 @@ app.get('/api/admin/backups/:id/export-excel', authenticateToken, checkRole(['AD
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.end(buffer);
+});
+
+// --- MANUAL GRADING ---
+app.get('/api/exams/:id/review', authenticateToken, checkRole(['LECTURER', 'ADMIN']), async (req, res) => {
+    const examId = req.params.id;
+
+    const exam = await db.prepare('SELECT * FROM exams WHERE id = ?').get(examId);
+    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    if (req.user.role !== 'ADMIN' && exam.created_by !== req.user.id) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const sections = await db.prepare('SELECT * FROM exam_sections WHERE exam_id = ? ORDER BY order_index').all(examId);
+    const questions = await db.prepare(`
+        SELECT q.id, q.type, q.question_text, q.options, q.correct_answers, q.image_url, q.section_id, q.score,
+               es.title as section_title, es.order_index
+        FROM questions q
+        LEFT JOIN exam_sections es ON q.section_id = es.id
+        WHERE q.exam_id = ?
+        ORDER BY es.order_index ASC, q.id ASC
+    `).all(examId);
+
+    const submissions = await db.prepare(`
+        SELECT s.id, s.student_id, s.std_id, s.answers, s.raw_score, s.total_questions, s.submitted_at,
+               u.name as student_name, u.email as student_email, u.picture as student_picture
+        FROM submissions s
+        JOIN users u ON s.student_id = u.id
+        WHERE s.exam_id = ? AND s.status = 'submitted'
+        ORDER BY u.name ASC
+    `).all(examId);
+
+    res.json({
+        exam: {
+            id: exam.id,
+            title: exam.title,
+            course: exam.course,
+        },
+        sections: sections.map(s => ({
+            id: s.id,
+            title: s.title,
+            description: s.description,
+            order_index: s.order_index,
+        })),
+        questions: questions.map(q => ({
+            ...q,
+            options: q.options ? JSON.parse(q.options) : [],
+            correct_answers: q.correct_answers ? JSON.parse(q.correct_answers) : [],
+            score: q.score || 1,
+        })),
+        submissions: submissions.map(s => ({
+            ...s,
+            answers: s.answers ? JSON.parse(s.answers) : {},
+        }))
+    });
+});
+
+app.patch('/api/submissions/:subId/manual-score', authenticateToken, checkRole(['LECTURER', 'ADMIN']), async (req, res) => {
+    const subId = Number(req.params.subId);
+    const { manual_scores } = req.body; // { questionId: score (0 to q.score) }
+
+    const sub = await db.prepare('SELECT * FROM submissions WHERE id = ?').get(subId);
+    if (!sub) return res.status(404).json({ error: 'Submission not found' });
+
+    const exam = await db.prepare('SELECT created_by FROM exams WHERE id = ?').get(sub.exam_id);
+    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    if (req.user.role !== 'ADMIN' && exam.created_by !== req.user.id) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Recalculate raw_score based on manual_scores
+    const questions = await db.prepare('SELECT id, type, correct_answers, score FROM questions WHERE exam_id = ?').all(sub.exam_id);
+    const answers = JSON.parse(sub.answers || '{}');
+
+    let rawScore = 0;
+    for (const q of questions) {
+        const qIdStr = String(q.id);
+        const qScore = q.score || 1;
+        // If there's a manual score for this question, use it (clamped to 0..qScore)
+        if (manual_scores && manual_scores[qIdStr] !== undefined) {
+            rawScore += Math.min(Math.max(0, Number(manual_scores[qIdStr])), qScore);
+        } else {
+            // Auto-grade
+            const correct = JSON.parse(q.correct_answers || '[]');
+            const student = answers[q.id] || [];
+
+            if (q.type === 'short_answer' || q.type === 'paragraph') {
+                const studentAns = (student[0] || '').trim().toLowerCase();
+                if (studentAns && correct.some(c => c.trim().toLowerCase() === studentAns)) {
+                    rawScore += qScore;
+                }
+            } else {
+                if (correct.length === student.length && correct.every(v => student.includes(v))) {
+                    rawScore += qScore;
+                }
+            }
+        }
+    }
+
+    // Store manual_scores in the answers JSON (as a special key)
+    const updatedAnswers = { ...answers, _manual_scores: manual_scores };
+
+    await db.prepare(`
+        UPDATE submissions SET raw_score = ?, answers = ? WHERE id = ?
+    `).run(rawScore, JSON.stringify(updatedAnswers), subId);
+
+    res.json({ message: 'Score updated', raw_score: rawScore });
 });
 
 app.get('/api/lecturer/monitoring/:examId', authenticateToken, checkRole(['LECTURER', 'ADMIN']), async (req, res) => {
