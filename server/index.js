@@ -167,9 +167,10 @@ const checkRole = (roles) => (req, res, next) => {
 
 // --- AUTH ---
 app.post('/api/auth/google', async (req, res) => {
-    const { credential } = req.body;
+    const { credential, client_id } = req.body;
     try {
-        const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: process.env.GOOGLE_CLIENT_ID });
+        const audience = client_id || process.env.GOOGLE_CLIENT_ID;
+        const ticket = await googleClient.verifyIdToken({ idToken: credential, audience });
         const { sub: id, email, name, picture } = ticket.getPayload();
 
         if (!email) {
