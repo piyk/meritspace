@@ -13,6 +13,10 @@ const crypto = require('crypto');
 const XLSX = require('xlsx');
 const iconv = require('iconv-lite');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { generateObject, gateway } = require('ai');
+const { createGoogleGenerativeAI } = require('@ai-sdk/google');
+const { createOpenAI } = require('@ai-sdk/openai');
+const { z } = require('zod');
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 
@@ -337,14 +341,10 @@ app.post('/api/exams/generate-questions', authenticateToken, checkRole(['LECTURE
     }
 
     try {
-        if (!process.env.GEMINI_API_KEY) {
-            req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
-            return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in environment variables' });
-        }
+        const provider = process.env.AI_PROVIDER || 'google';
+        let aiModelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const aiModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-        const model = genAI.getGenerativeModel({ model: aiModel });
+        console.log(`[AI Generation] Provider: ${provider}, Model: ${aiModelName}`);
 
         let parsedBloomLevels = [];
         try {
@@ -374,73 +374,107 @@ Follow these quality guidelines:
 5. No Meta-References: The "question_text" should NOT include phrases like "based on the input file", "from the PDF", "according to the document", จากเอกสาร, จากสไลด์, ดังเอกสาร, ดังสไลด์ or any similar references to the source material.
 6. Clean Options: The strings in the "options" array should contain ONLY the text of the choice. DO NOT include choice labels such as "ก.", "ข.", "ค.", "ง.", or "A.", "B.", "C.", "D.".
 
-Return ONLY a JSON array of objects with the exact following structure:
-[
-  {
-    "type": "multiple_choice",
-    "question_text": "Sample Question",
-    "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-    "correct_answers": ["Option 1"],
-    "is_required": false,
-    "image_url": null
-  }
-]`;
+Return ONLY a JSON array of objects.`;
 
-        const fullPrompt = `${systemPrompt}\n\nLanguage: ${language === 'en' ? 'English' : 'Thai'}\n\nUser Prompt: ${prompt || (language === 'en' ? 'Generate 5 questions from the following text/attached file' : 'สร้างคำถาม 5 ข้อจากเนื้อหาต่อไปนี้/เอกสารที่แนบมา')}`;
-
-        const contentParts = [fullPrompt];
-
-        if (req.files && req.files.length > 0) {
-            for (const file of req.files) {
-                const fileExt = path.extname(file.originalname).toLowerCase();
-                if (fileExt !== '.pdf') {
-                    req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
-                    return res.status(400).json({ error: 'Only PDF files are supported for AI generation' });
-                }
-
-                const dataBuffer = fs.readFileSync(file.path);
-                contentParts.push({
-                    inlineData: {
-                        data: dataBuffer.toString("base64"),
-                        mimeType: "application/pdf"
-                    }
-                });
-            }
-
-            // Cleanup all files after reading them
-            req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
-        }
-
-        const result = await model.generateContent(contentParts);
-        const responseText = result.response.text();
+        const userPromptText = `Language: ${language === 'en' ? 'English' : 'Thai'}\n\nUser Prompt: ${prompt || (language === 'en' ? 'Generate 5 questions from the following text/attached file' : 'สร้างคำถาม 5 ข้อจากเนื้อหาต่อไปนี้/เอกสารที่แนบมา')}`;
 
         let questions;
-        try {
+
+        if (provider === 'vercel') {
+            const gatewayUrl = 'https://ai-gateway.vercel.sh/v1';
+            console.log(`[AI Generation] Using Vercel AI Gateway (OpenAI-compatible): ${gatewayUrl}`);
+
+            const gatewayApiKey = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_API_KEY || 'no-key';
+            const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+
+            const gateway = createOpenAI({
+                apiKey: gatewayApiKey,
+                baseURL: gatewayUrl,
+                headers: {
+                    'x-goog-api-key': googleApiKey
+                }
+            });
+
+            const gatewayModelName = aiModelName.startsWith('google/') ? aiModelName : `google/${aiModelName}`;
+            console.log(`[AI Generation] Requesting model: ${gatewayModelName}`);
+
+            const contentParts = [{ type: 'text', text: userPromptText }];
+
+            if (req.files && req.files.length > 0) {
+                for (const file of req.files) {
+                    if (path.extname(file.originalname).toLowerCase() === '.pdf') {
+                        const pdfBuffer = fs.readFileSync(file.path);
+                        contentParts.push({
+                            type: 'file',
+                            data: pdfBuffer.toString('base64'),
+                            mediaType: 'application/pdf'
+                        });
+                    }
+                }
+            }
+
+            const result = await generateObject({
+                model: gateway(gatewayModelName),
+                system: systemPrompt,
+                messages: [
+                    { role: 'user', content: contentParts }
+                ],
+                schema: z.array(z.object({
+                    type: z.enum(['multiple_choice', 'checkboxes', 'short_answer']),
+                    question_text: z.string(),
+                    options: z.array(z.string()),
+                    correct_answers: z.array(z.string()),
+                    is_required: z.boolean().default(false),
+                    image_url: z.string().nullable().default(null)
+                }))
+            });
+            questions = result.object;
+
+        } else {
+            // Original Google API way (No Gateway)
+            console.log(`[AI Generation] Using Direct Google API`);
+            const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+            // Clean model name if it has a provider prefix (e.g., google/gemini-pro -> gemini-pro)
+            const cleanModelName = aiModelName.includes('/') ? aiModelName.split('/').pop() : aiModelName;
+            const model = genAI.getGenerativeModel({ model: cleanModelName });
+
+            const contentParts = [systemPrompt + "\n\n" + userPromptText];
+
+            if (req.files && req.files.length > 0) {
+                for (const file of req.files) {
+                    if (path.extname(file.originalname).toLowerCase() === '.pdf') {
+                        contentParts.push({
+                            inlineData: {
+                                data: fs.readFileSync(file.path).toString("base64"),
+                                mimeType: "application/pdf"
+                            }
+                        });
+                    }
+                }
+            }
+
+            const result = await model.generateContent(contentParts);
+            const responseText = result.response.text();
             const cleanText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             questions = JSON.parse(cleanText);
+        }
 
-            // Post-process to fix potential type mismatches from AI
-            if (Array.isArray(questions)) {
-                questions = questions.map(q => {
-                    const hasOptions = Array.isArray(q.options) && q.options.length > 0;
-                    const multipleCorrect = Array.isArray(q.correct_answers) && q.correct_answers.length > 1;
+        // Standardized Post-process
+        if (Array.isArray(questions)) {
+            questions = questions.map(q => ({
+                ...q,
+                type: (Array.isArray(q.options) && q.options.length > 0)
+                    ? (Array.isArray(q.correct_answers) && q.correct_answers.length > 1 ? 'checkboxes' : 'multiple_choice')
+                    : 'short_answer',
+                options: q.options || [],
+                is_required: !!q.is_required
+            }));
+        }
 
-                    if (hasOptions) {
-                        if (multipleCorrect) {
-                            q.type = 'checkboxes';
-                        } else {
-                            q.type = 'multiple_choice';
-                        }
-                    } else {
-                        q.type = 'short_answer';
-                        q.options = [];
-                    }
-                    return q;
-                });
-            }
-        } catch (e) {
-            console.error("Failed to parse AI response", responseText);
-            return res.status(500).json({ error: 'AI generated invalid JSON. Try changing the prompt.' });
+        // Cleanup files
+        if (req.files) {
+            req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
         }
 
         res.json(questions);
@@ -449,7 +483,7 @@ Return ONLY a JSON array of objects with the exact following structure:
         if (req.files) {
             req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
         }
-        res.status(500).json({ error: 'Failed to generate questions. Ensure valid PDF and API key.' });
+        res.status(500).json({ error: 'Failed to generate questions. Ensure valid configurations.' });
     }
 });
 

@@ -8,8 +8,11 @@
         "dev": "node index.js"
     },
     "dependencies": {
+        "@ai-sdk/google": "^3.0.34",
+        "@ai-sdk/openai": "^3.0.37",
         "@google/generative-ai": "^0.24.1",
         "@prisma/client": "^6.19.2",
+        "ai": "^6.0.105",
         "better-sqlite3": "^12.6.2",
         "cors": "^2.8.6",
         "dotenv": "^17.3.1",
@@ -20,6 +23,7 @@
         "multer": "^2.0.2",
         "prisma": "^6.19.2",
         "socket.io": "^4.8.3",
-        "xlsx": "^0.18.5"
+        "xlsx": "^0.18.5",
+        "zod": "^4.3.6"
     }
 }
